@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MioCity ルールアーカイブ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* BACKGROUNDS */
+    --bg:#0a0d12;
+    --bg-grad: radial-gradient(1100px 700px at 85% -10%, #101a22 0%, #0a0d12 55%);
+    --panel:#11161d;
+    --panel-2:#141a22;
+    --raised:#171e27;
+
+    /* TEXT & CONTRAST (WCAG AA) */
+    --text:#e8edf3;
+    --text-secondary:#9db0c4;
+    --text-dim:#8a97a8;        /* DEPRECATED: kept for backward compat */
+    --text-faint:#a8b5c8;
+
+    /* LINES */
+    --line:#232b36;
+    --line-soft:#1a212a;
+
+    /* ACCENTS */
+    --cyan:#3ddbea;
+    --cyan-dim:#1c4750;
+    --magenta:#ff4d94;
+    --magenta-dim:#4a1c30;
+    --amber:#ffb648;
+    --amber-dim:#4a3818;
+    --danger:#ff5470;
+    --danger-dim:#3d1620;
+
+    /* RUNTIME */
+    --accent: var(--cyan);
+    --accent-dim: var(--cyan-dim);
+    --tc: var(--accent);
+    --tc-rgb: 61, 219, 234;    /* rgb of active accent, set per-doc by JS */
+
+    --radius: 10px;
+    --font-display: "Zen Kaku Gothic New", "Noto Sans JP", sans-serif;
+    --font-body: "Noto Sans JP", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+  }
+
+  /* ===== LIGHT THEME ===== */
+  :root[data-theme="light"]{
+    --bg:#f8f9fb;
+    --bg-grad: linear-gradient(135deg, #f8f9fb 0%, #eef2f8 100%);
+    --panel:#eff2f7;
+    --panel-2:#e8ecf3;
+    --raised:#dfe5ed;
+    --text:#1a1f2e;
+    --text-secondary:#556578;
+    --text-dim:#556578;
+    --text-faint:#8a96a8;
+    --line:#d0dce8;
+    --line-soft:#dde5f0;
+    /* darker, saturated accents so accent-colored TEXT stays legible on light */
+    --cyan:#0a6c7b;
+    --magenta:#c01e5e;
+    --amber:#8a5a00;
+  }
+  :root[data-theme="light"] .tag.status{ color:#1a7f4b; }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-grad), var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.7;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background: var(--tc, var(--accent)); color:#04141a; }
+
+  a{ color:inherit; }
+
+  /* focus-visible */
+  :focus-visible{
+    outline:2px solid var(--tc, var(--accent));
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  /* skip link */
+  .skip-link{
+    position:absolute; top:-48px; left:0; z-index:100;
+    background:var(--tc, var(--accent)); color:#0a0d12;
+    padding:8px 16px; font-weight:700; border-radius:0 0 6px 0;
+    font-family:var(--font-mono); font-size:12px;
+    transition: top .15s ease;
+  }
+  .skip-link:focus{ top:0; }
+
+  /* ---------- scanline (static, subtle) ---------- */
+  .scan{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    opacity:.15;
+    mask-image: linear-gradient(to bottom, black, transparent);
+  }
+  .scan::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--tc, var(--accent)), transparent);
+    opacity:.5;
+    animation: scanmove 6s linear infinite;
+  }
+  @keyframes scanmove{
+    0%{ top:-5%; }
+    100%{ top:105%; }
+  }
+
+  /* ---------- shell layout ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    min-height:100vh;
+    max-width:1400px;
+    margin:0 auto;
+  }
+
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    border-right:1px solid var(--line-soft);
+    padding:28px 20px 28px 28px;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{
+    display:flex; flex-direction:column; gap:2px; margin-bottom:26px;
+  }
+  .brand-mark{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.18em;
+    color:var(--text-faint); text-transform:uppercase;
+  }
+  .brand-name{
+    font-family:var(--font-display); font-weight:900; font-size:22px;
+    letter-spacing:.02em;
+    background: linear-gradient(120deg, var(--text) 10%, var(--cyan) 60%, var(--magenta) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand-sub{
+    font-family:var(--font-mono); font-size:12px; color:var(--text-secondary); margin-top:4px;
+  }
+
+  .theme-toggle{
+    margin-top:16px;
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.08em;
+    color:var(--text-secondary); background:var(--panel);
+    border:1px solid var(--line-soft); border-radius:20px;
+    padding:7px 13px; cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .theme-toggle:hover{ border-color:var(--tc, var(--accent)); color:var(--text); }
+  .theme-toggle .ticon{ width:14px; height:14px; }
+
+  .doclist{ display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  .doctab{
+    display:flex; align-items:flex-start; gap:12px;
+    padding:14px 14px; border-radius:var(--radius);
+    border:1px solid var(--line-soft);
+    background:var(--panel);
+    color:var(--text);
+    cursor:pointer;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease, box-shadow .15s ease;
+    text-align:left;
+  }
+  .doctab:hover{ transform: translateX(2px); border-color: var(--tc, var(--accent)); }
+  .doctab.active{
+    background: var(--panel-2);
+    border-color: var(--tc, var(--accent));
+    box-shadow: inset 0 0 12px rgba(var(--tc-rgb), .4), 0 0 20px rgba(var(--tc-rgb), .25);
+  }
+  .doctab .dot{
+    width:8px; height:8px; border-radius:50%; margin-top:6px; flex:none;
+    background: var(--tc, var(--accent)); opacity:.8;
+    filter: drop-shadow(0 0 4px rgba(var(--tc-rgb), .5));
+  }
+  .doctab .meta{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .doctab .code{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em;
+    color: var(--tc, var(--accent));
+  }
+  .doctab .name{ font-family:var(--font-display); font-weight:700; font-size:14.5px; color:var(--text); }
+  .doctab .sub{ font-size:12px; color:var(--text-secondary); line-height:1.5; }
+
+  .sidebar-foot{
+    margin-top:26px; padding-top:18px; border-top:1px solid var(--line-soft);
+    font-size:13.5px; color:var(--text-secondary); line-height:1.8;
+  }
+  .sidebar-foot b{ color:var(--text); }
+
+  /* mobile top bar */
+  .mobile-bar{ display:none; }
+
+  /* ---------- main ---------- */
+  .main{ min-width:0; padding:0 36px 80px; position:relative; }
+
+  .topband{
+    position:relative;
+    padding:34px 0 20px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:26px;
+  }
+  .filehead{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    position:relative; z-index:1;
+  }
+  .filehead-left{ display:flex; flex-direction:column; gap:8px; }
+  .tag-row{ display:flex; align-items:center; gap:10px; }
+  .tag{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em;
+    padding:3px 8px; border-radius:4px; border:1px solid currentColor;
+    color: var(--tc, var(--accent));
+  }
+  .tag.status{ color:#7ee89a; }
+  .doctitle{
+    font-family:var(--font-display); font-weight:900; font-size:clamp(24px,3vw,34px);
+    letter-spacing:.01em; margin:0; line-height:1.2; color:var(--text);
+  }
+  .docsub{ color:var(--text-secondary); font-size:13.5px; }
+
+  .searchbar-row{ display:flex; align-items:center; gap:10px; }
+  .searchwrap{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:8px; padding:10px 14px; min-width:260px;
+    border-left:2px solid transparent;
+    transition: border-color .15s ease;
+  }
+  .searchwrap:focus-within{ border-left:2px solid var(--tc, var(--accent)); }
+  .searchwrap svg{ flex:none; opacity:.7; color:var(--text-secondary); }
+  .searchwrap input{
+    background:none; border:none; outline:none; color:var(--text);
+    font-family:var(--font-mono); font-size:13px; width:100%;
+  }
+  .searchwrap input::placeholder{ color:var(--text-secondary); }
+  .searchwrap .clearbtn{
+    flex:none; display:none; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--line); color:var(--text); font-size:13px; line-height:1;
+    padding:0;
+  }
+  .searchwrap .clearbtn:hover{ background:var(--tc, var(--accent)); color:#04141a; }
+  .searchwrap.has-value .clearbtn{ display:inline-flex; }
+  .searchwrap .kbd{
+    font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
+    border:1px solid var(--line); border-radius:4px; padding:1px 5px; flex:none;
+  }
+  .match-count{
+    font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);
+    white-space:nowrap; min-width:0;
+  }
+
+  /* section quick-nav */
+  .quicknav{
+    display:flex; gap:8px; overflow-x:auto; padding:16px 0 2px;
+    scrollbar-width:none;
+    scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(90deg, black 92%, transparent 100%);
+    mask-image: linear-gradient(90deg, black 92%, transparent 100%);
+  }
+  .quicknav::-webkit-scrollbar{ display:none; }
+  .qchip{
+    font-family:var(--font-mono); font-size:12px; white-space:nowrap;
+    color:var(--text); background:var(--panel); border:1px solid var(--line-soft);
+    padding:8px 14px; border-radius:20px; cursor:pointer;
+    min-height:40px; display:flex; align-items:center;
+    border-bottom:1px solid var(--line-soft);
+    transition:.15s ease;
+    scroll-snap-align:start;
+  }
+  .qchip:hover{ color:var(--text); border-color: var(--tc, var(--accent)); }
+  .qchip.active{
+    color:var(--text); background:transparent;
+    border-color:var(--line-soft);
+    border-bottom:2px dashed var(--tc, var(--accent));
+    box-shadow:0 0 8px rgba(var(--tc-rgb), .3);
+  }
+
+  /* ---------- content sections ---------- */
+  .section{
+    margin-bottom:34px; scroll-margin-top:24px;
+    animation: rise .5s ease both;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .sec-head{
+    display:flex; align-items:baseline; gap:10px; margin-bottom:14px;
+  }
+  .sec-num{
+    font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--tc, var(--accent));
+    border:1px solid var(--tc, var(--accent)); border-radius:4px; padding:4px 8px;
+    background: rgba(var(--tc-rgb), .08);
+    flex:none;
+  }
+  .sec-title{
+    font-family:var(--font-display); font-weight:700; font-size:18px; margin:0; color:var(--text);
+    line-height:1.4;
+  }
+
+  .paragraphs{ max-width:74ch; }
+  .paragraphs p{ color:var(--text); margin:0 0 12px; line-height:1.7; }
+  .paragraphs p:last-child{ margin-bottom:0; }
+  .intro-line{
+    color:var(--text-secondary); font-size:15px; line-height:1.7; margin:0 0 12px;
+    border-left:2px solid var(--tc, var(--accent)); padding:6px 0 6px 12px;
+    background: rgba(var(--tc-rgb), .02);
+    max-width:74ch;
+  }
+
+  ul.rulelist{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; }
+  ul.rulelist li{
+    position:relative; padding:10px 14px 10px 30px;
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:8px;
+    font-size:15px; line-height:1.65; color:var(--text);
+    max-width:88ch;
+  }
+  ul.rulelist li::before{
+    content:""; position:absolute; left:12px; top:15px;
+    width:7px; height:7px; border-radius:2px;
+    background: var(--tc, var(--accent)); opacity:.8;
+    filter: drop-shadow(0 0 4px rgba(var(--tc-rgb), .5));
+  }
+  ul.rulelist li:hover{ outline:1px solid var(--tc, var(--accent)); }
+  ul.rulelist li.banned{ border-color: var(--danger-dim); }
+  ul.rulelist li.banned::before{ background:var(--danger); filter:drop-shadow(0 0 4px rgba(255,84,112,.5)); }
+  ul.rulelist li .flag{
+    display:inline-block; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em;
+    color:var(--danger); border:1px solid var(--danger); border-radius:3px; padding:1px 5px;
+    margin-right:8px; transform:translateY(-1px);
+  }
+  ul.rulelist li.filtered-out{ display:none; }
+
+  .subgroup{ margin-top:18px; }
+  .subgroup:first-child{ margin-top:0; }
+  h3.subhead{
+    font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--text-secondary);
+    letter-spacing:.04em; margin:0 0 10px; padding-bottom:6px; border-bottom:1px dashed var(--line);
+  }
+
+  /* heist rules grid */
+  .heistgrid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px; }
+  .heistcard{
+    background:var(--panel-2); border:1px solid var(--line-soft);
+    border-top:3px solid var(--tc, var(--accent));
+    border-radius:10px; padding:14px 16px;
+    transition: box-shadow .15s ease;
+  }
+  .heistcard:hover{ box-shadow: inset 0 2px 8px rgba(var(--tc-rgb), .1); }
+  .heistcard h4{
+    margin:0 0 8px; font-family:var(--font-display); font-size:14px; font-weight:700;
+    color: var(--tc, var(--accent));
+  }
+  .heistcard ul{ margin:0; padding-left:16px; font-size:14px; color:var(--text-secondary); line-height:1.55; display:flex; flex-direction:column; gap:4px;}
+
+  /* tables */
+  .tablewrap{
+    overflow:auto; max-height:65vh; position:relative;
+    border:1px solid var(--line-soft); border-radius:10px;
+  }
+  .scroll-hint{
+    display:none; font-family:var(--font-mono); font-size:10.5px;
+    color:var(--text-faint); margin:6px 0 0;
+  }
+  table.datatable{ border-collapse:collapse; width:100%; min-width:560px; }
+  table.datatable thead{
+    position:sticky; top:0; z-index:20;
+    background:var(--raised);
+    box-shadow: 0 4px 16px rgba(var(--tc-rgb), .15);
+  }
+  table.datatable thead th{
+    font-family:var(--font-mono); font-weight:600; font-size:12px; letter-spacing:.06em;
+    text-transform:uppercase; color: var(--tc, var(--accent));
+    background:var(--raised); text-align:left; padding:10px 14px;
+    border-bottom:1px dashed var(--line); white-space:nowrap;
+  }
+  table.datatable thead th.num{ text-align:right; padding-right:24px; }
+  table.datatable tbody td{
+    padding:9px 14px; border-bottom:1px solid var(--line-soft); color:var(--text);
+    font-size:14px; line-height:1.6; white-space:nowrap;
+  }
+  table.datatable tbody td.num{
+    text-align:right; padding-right:24px;
+    font-family:var(--font-mono); font-variant-numeric: tabular-nums;
+  }
+  table.datatable tbody tr{ border-left:3px solid transparent; transition: transform .12s ease, border-left-width .12s ease; }
+  table.datatable tbody tr:nth-child(even){ background: rgba(255,255,255,.03); }
+  :root[data-theme="light"] table.datatable tbody tr:nth-child(even){ background: rgba(0,0,0,.03); }
+  table.datatable tbody tr:hover{ background: rgba(255,255,255,.04); box-shadow: inset 0 0 6px rgba(var(--tc-rgb), .1); }
+  :root[data-theme="light"] table.datatable tbody tr:hover{ background: rgba(0,0,0,.04); }
+  /* crime-tier left border */
+  table.datatable tbody tr.tier-small{ border-left-color: var(--cyan); }
+  table.datatable tbody tr.tier-medium{ border-left-color: var(--magenta); }
+  table.datatable tbody tr.tier-semilarge{ border-left-color: var(--amber); }
+  table.datatable tbody tr.tier-large{ border-left-color: #ff5470; }
+  table.datatable tbody tr.tier-special{ border-left-color: #c85eff; }
+  table.datatable tbody tr[class*="tier-"]:hover{ border-left-width:4px; transform: translateX(2px); }
+  table.datatable tbody tr.filtered-out{ display:none; }
+  .tablenote{ font-size:12px; color:var(--text-faint); margin-top:8px; line-height:1.6; }
+
+  /* search highlight */
+  mark{
+    background: rgba(var(--tc-rgb), .25);
+    color: var(--text);
+    border-top:1px solid var(--tc, var(--accent));
+    border-bottom:1px solid var(--tc, var(--accent));
+    box-shadow: 0 0 4px rgba(var(--tc-rgb), .3);
+    border-radius:2px; padding:1px 3px;
+  }
+
+  .doc-footer{
+    margin-top:44px; padding-top:18px; border-top:1px solid var(--line);
+    font-size:12px; color:var(--text-faint); line-height:1.6;
+  }
+
+  .no-results{
+    display:none; text-align:center; padding:60px 20px; color:var(--text-secondary);
+    font-family:var(--font-mono); font-size:13px;
+  }
+
+  /* cross-document search hint */
+  .cross-hint{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    margin:0 0 22px; padding:10px 14px;
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-left:2px solid var(--tc, var(--accent)); border-radius:0 8px 8px 0;
+  }
+  .cross-hint[hidden]{ display:none; }
+  .cross-label{ font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary); }
+  .cross-chip{
+    display:inline-flex; align-items:center; gap:2px;
+    font-family:var(--font-body); font-size:13px; cursor:pointer;
+    color:var(--text); background:var(--panel-2);
+    border:1px solid var(--line-soft); border-left:3px solid var(--tc,var(--accent));
+    border-radius:6px; padding:5px 10px; min-height:34px;
+  }
+  .cross-chip:hover{ border-color:var(--tc,var(--accent)); box-shadow:0 0 8px rgba(var(--tc-rgb),.25); }
+  .cross-chip b{ color:var(--tc,var(--accent)); font-family:var(--font-mono); margin-left:5px; }
+
+  /* back to top */
+  .to-top{
+    position:fixed; right:22px; bottom:22px; z-index:40;
+    width:44px; height:44px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--tc, var(--accent));
+    color:var(--tc, var(--accent)); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 0 18px rgba(var(--tc-rgb), .25);
+    opacity:0; pointer-events:none; transform:translateY(10px);
+    transition: opacity .2s ease, transform .2s ease;
+  }
+  .to-top.show{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  .to-top:hover{ background:var(--tc, var(--accent)); color:#04141a; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px){
+    .shell{ grid-template-columns: 1fr; }
+    .sidebar{ display:none; }
+    .mobile-bar{
+      display:flex; gap:10px; overflow-x:auto; padding:12px 16px;
+      border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:5;
+      scrollbar-width:none;
+      scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    }
+    .mobile-bar::-webkit-scrollbar{ display:none; }
+    .mtab{
+      display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+      min-height:48px; padding:10px 14px; white-space:nowrap;
+      border-bottom:2px solid transparent; color:var(--text);
+      background:var(--panel); border-radius:8px 8px 0 0;
+      cursor:pointer; scroll-snap-align:start;
+    }
+    .mtab .mtab-code{ font-family:var(--font-mono); font-size:9px; letter-spacing:.14em; color:var(--tc, var(--accent)); }
+    .mtab .mtab-title{ font-size:11px; font-weight:700; color:var(--text); }
+    .mtab .mtab-sub{ font-size:9px; color:var(--text-secondary); }
+    .mtab.active{ border-bottom:2px dashed var(--tc, var(--accent)); box-shadow:0 0 8px rgba(var(--tc-rgb), .3); }
+    .mobile-theme{
+      display:flex; align-items:center; gap:6px; align-self:center;
+      min-height:48px; padding:0 12px; cursor:pointer;
+      background:var(--panel); border:1px solid var(--line-soft); border-radius:8px;
+      color:var(--text-secondary); font-family:var(--font-mono); font-size:10px;
+    }
+    .main{ padding:0 18px 60px; }
+    .topband{ padding:22px 0 14px; }
+    .searchwrap{ width:100%; min-width:0; }
+    .searchbar-row{ width:100%; flex-wrap:wrap; }
+    .filehead{ flex-direction:column; align-items:flex-start; }
+    .scroll-hint{ display:block; }
+  }
+
+  /* tablet: table card-mode */
+  @media (max-width: 768px){
+    .tablewrap{ overflow:visible; max-height:none; border:none; }
+    .scroll-hint{ display:none; }
+    table.datatable{ min-width:0; }
+    table.datatable thead{ display:none; }
+    table.datatable tbody tr{
+      display:grid; grid-template-columns:auto 1fr;
+      background:var(--panel); border:1px solid var(--line);
+      border-left:3px solid transparent;
+      padding:12px; gap:6px 10px; border-radius:8px; margin-bottom:10px;
+    }
+    table.datatable tbody tr:nth-child(even){ background:var(--panel); }
+    table.datatable tbody td{
+      display:grid; grid-template-columns:subgrid; grid-column:1 / -1;
+      padding:0; border:none; white-space:normal; align-items:baseline;
+    }
+    table.datatable tbody td.num{ text-align:left; padding-right:0; }
+    table.datatable tbody td::before{
+      content: attr(data-label);
+      font-family:var(--font-mono); font-size:10px; color:var(--text-secondary);
+      font-weight:600; text-transform:uppercase; letter-spacing:.06em;
+    }
+    .heistgrid{ grid-template-columns:1fr; }
+  }
+
+  @media (max-width: 480px){
+    body{ font-size:14px; }
+    .main{ padding:0 12px 40px; }
+    .qchip{ padding:7px 11px; }
+  }
+
+  /* ---------- accessibility: reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+    .section{ animation:none; }
+    .scan::before{ animation:none; display:none; }
+  }
+
+  /* ---------- print ---------- */
+  @media print{
+    body{ background:#fff; color:#000; }
+    .sidebar, .mobile-bar, .topband .searchbar-row, .quicknav, .scan,
+    .to-top, .theme-toggle, .skip-link, .scroll-hint{ display:none !important; }
+    .shell{ grid-template-columns:1fr; max-width:none; }
+    .main{ padding:0; }
+    .section{ display:block !important; page-break-inside:avoid; break-inside:avoid; margin-bottom:20px; }
+    .section .paragraphs p, ul.rulelist li, .heistcard, table.datatable tr{ display:revert !important; }
+    ul.rulelist li{ background:#fff; border:1px solid #ccc; color:#000; }
+    ul.rulelist li.filtered-out, .heistcard[hidden], tr.filtered-out{ display:list-item !important; }
+    .tablewrap{ overflow:visible !important; max-height:none !important; border:1px solid #ccc; }
+    table.datatable thead th, table.datatable tbody td{ color:#000; }
+    mark{ background:#ffe; border:1px solid #999; box-shadow:none; color:#000; }
+    .sec-title, .doctitle, .heistcard h4, table.datatable thead th{ color:#000; }
+    .no-results{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="shell">
+  <aside class="sidebar" role="complementary" aria-label="Document navigation">
+    <div class="brand">
+      <div class="brand-mark">MIO-NET CIVIC ARCHIVE</div>
+      <div class="brand-name">MioCity Rules</div>
+      <div class="brand-sub">ACCESS: PUBLIC // v.2026.07</div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="テーマを切り替え">
+        <svg class="ticon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path class="t-moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span id="themeLabel">DARK MODE</span>
+      </button>
+    </div>
+    <nav class="doclist" id="doclist" aria-label="ルールファイル一覧"></nav>
+    <div class="sidebar-foot">
+      <b>使い方：</b> 左のファイルから見たいルールを選択。上部の検索欄で条文を横断的に検索できます。<br><br>
+      内容は原文のGoogleドキュメントに基づいています。表記は随時変更される可能性があります。
+    </div>
+  </aside>
+
+  <main class="main" id="main-content" aria-label="MioCity Rules Documents">
+    <div class="mobile-bar" id="mobileBar"></div>
+
+    <div class="topband">
+      <div class="scan" aria-hidden="true"></div>
+      <div class="filehead">
+        <div class="filehead-left">
+          <div class="tag-row">
+            <span class="tag" id="fileCode">SRV-01</span>
+            <span class="tag status">● ACCESS GRANTED</span>
+          </div>
+          <h1 class="doctitle" id="fileTitle">—</h1>
+          <div class="docsub" id="fileSub">—</div>
+        </div>
+        <div class="searchbar-row">
+          <div class="searchwrap" id="searchWrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input id="searchInput" type="text" aria-label="全セクションをキーワード検索" aria-describedby="matchCount" placeholder="条文をキーワード検索…（例: 禁止 / 罰金 / 犯罪禁止車両）" />
+            <button class="clearbtn" id="clearBtn" type="button" aria-label="検索をクリア">×</button>
+            <span class="kbd">/</span>
+          </div>
+          <span class="match-count" id="matchCount" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="quicknav" id="quicknav" aria-label="セクションナビゲーション"></div>
+    </div>
+
+    <div id="crossHint" class="cross-hint" hidden></div>
+    <div id="content"></div>
+    <div class="no-results" id="noResults" role="status" aria-live="polite">一致する条文が見つかりませんでした。検索語を変えてお試しください。</div>
+  </main>
+</div>
+
+<button class="to-top" id="toTop" type="button" aria-label="トップへ戻る">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<script id="mio-data" type="application/json">[{"code": "SRV-01", "title": "MioCityサーバールール", "subtitle": "サーバー概要・一般ルール・RPルール", "accent": "cyan", "sections": [{"type": "text", "heading": "サーバー概要と方針", "paragraphs": ["当サーバーは「サイバーパンク」をテーマとした世界観の中で自由なロールプレイ（RP）を楽しめる場を提供します。他の街では見たことのない新鮮な景色や斬新なプレイスタイルを体験できるよう設計されています。", "サイバーパンクに詳しい方も、そうでない方も、誰もが楽しめる街を目指しています。", "なお、本ゲームが18歳以上を対象としているため、このサーバーも原則18歳以上を対象としています。ただし、年齢確認が難しいため、もし18歳未満で参加される場合は、年齢に関わらず「大人らしい行動」を求めます。", "サーバー内で多くのプレイヤーと交流することになりますが、全てのプレイヤーには心があります。暴言や迷惑行為、不快にさせる言動などは厳しく処罰します。また18歳以上であっても、「子供らしい行動」をとった場合は厳正に対処します。", "この基準を理解できない方は参加をご遠慮ください。", "当サーバーはRPを楽しむ場であり、多様なプレイヤーが参加しています。そのため、プレイヤー間でRPの許容範囲や求めるプレイスタイルに差が生じることがあります。互いのスタイルを尊重し、適切にコミュニケーションを取りながら楽しんでください。また、頭上表示（/name）を使いRP中心のプレイヤー向けのマークを導入しています。これを基準に相手が求めるRPのスタイルを尊重した交流をお願いします。", "ルールを細かく決める以上に、『お互いに許容し合い、気持ちよく遊ぶ』という姿勢を大切にしてください。"]}, {"type": "list", "heading": "一般ルール", "intro": "以下のルールに違反した場合は処罰の対象となります。サーバーに参加する際は、必ずご一読ください。", "items": ["日本語を理解し、日本語での会話ができることを前提とします。", "荒らし行為、暴言、他者を不快にさせる行為（街内外を問わず）を禁止します。", "ヘイトスピーチを禁止します。", "チートツールの使用はBAN対象とします。", "撃ち合いに有利となるMOD（デバフ無効化）や、透過効果を含むCitizenの導入を禁止します。※弾道表示(トレーサー)は黒のスモークのようなものだけ可能とします。光線のようなものは禁止します。もし不安な方はチケットで必ず確認を行ってください", "クロスヘアは、街中で用意されているもの（F10等で指定可能）のみ使用可能とします。", "システムのバグや不具合を利用したプレイを禁止します（例：Bigfootの使用、グリッチロール、スピードブースト、ハーネス解除時の屈み、スタミナが減らないエモート、無線撃ち等）。発見した場合は運営へ報告してください。", "スピードブーストやグリッチロールを行った場合、運営より警告を行います。", "非現実的な手段によるアドバンテージ取得（エモートすり抜け等）を禁止します。", "会話が可能な状態で参加してください。", "ボディカメラの着用は推奨しますが、ボディカメラの存在を利用した脅迫行為は禁止します。", "請求後1週間以内に支払いの意思が確認できない場合、警告を行います。さらに警告後1週間経過しても支払いの意思が確認できない場合、キャラクターを削除します。", "キャラクターは原則2キャラクターまで作成可能です。ただし、予備として追加で1スロットを用意しています。", "イニシエーションの有効期間は「定期瞑想まで」、クールタイムは48時間とします。※イニシエーション例：「見かけ次第発砲します」「本署を襲撃します」等", "白市民パス、武器ライセンスは必ずインベントリに所持してください。", "白市民パス、武器ライセンスの不正所持・不正使用を禁止します。", "不適切な名前（街名、FiveM名、Discord名等）の使用はBAN対象となる場合があります。", "過去に他サーバーで荒らし行為を行った方、または荒らし行為を配信している方はBAN対象となる場合があります。荒らし行為に協力した方も同様です。", "チート販売等のサーバーに参加している、または過去に参加していたプレイヤーはBAN対象となる場合があります。"]}, {"type": "list", "heading": "ロールプレイルール", "items": ["自身が作成した複数キャラクター間での金銭・車両等の譲渡を禁止します（仲介者を介した場合も含みます）。", "ロールプレイ上で知り得ない情報の使用を禁止します（例：配信や外部情報から得た情報の使用）。", "別人格で得た情報を、同一魂間で共有・使用することを禁止します。", "声による人物特定は避けてください。", "RPの押し付け、過度ななりすまし行為を禁止します。", "RPを盾に他者を不快にさせる行為を禁止します。該当事例を発見した場合は、録画を添えてチケットを提出してください。", "RP上の問題は、原則として当事者同士で解決してください。ただし、重大な問題に発展した場合は運営へチケットを提出してください。", "報告のあったRPに関するトラブルや喧嘩の対応および処遇については、運営の判断を最優先とします。", "街中でロールプレイ内容を指摘する行為を禁止します。"]}, {"type": "list", "heading": "禁止行為", "items": ["ダウン通知後、救急隊へ連絡せずに移動する行為を禁止します。", "不利な状況を回避する目的でのログアウトや意図的なクラッシュ（コンバットログ）を禁止します。", "シーン中のダウン状態で、ウィスパー以上の音量で会話する行為を禁止します（歪みの場合は例外）。", "プレイヤーおよびプレイヤー所有車両からのロブ行為を禁止します。", "プレイヤー車両の盗難行為を禁止します（警察車両を除く）。", "エモートキャンセルを禁止します。", "ダウン状態でのエモート使用を禁止します。", "RDM（無差別攻撃）およびドライブバイ（運転中の発砲）を禁止します。", "無警告での発砲を禁止します。", "飲食店、メカニック等の敷地内での犯罪行為・迷惑行為を禁止します。", "15分以上、他者を手錠や担架で拘束する行為を禁止します。", "緊急時以外での警察署復活を禁止します。", "ルールの抜け穴を利用する行為を禁止します。", "過度な煽り行為を禁止します。", "スタミナが減らないエモートの使用を禁止します。", "服装として不自然な格好、公序良俗に反する格好を禁止します。", "警察官以外が警察官の服装をする行為を禁止します。", "外部通話ツールを使用した犯罪行為・事件対応を禁止します。", "オーナー・店長のギャング加入を禁止します。", "ハンティング以外での猟銃使用を禁止します。", "一般市民として生活している運営スタッフに、運営関連の質問をする行為を禁止します。", "公務員や従業員に対する出勤の強要を禁止します。", "Ped切り替え状態（動物化等）での犯罪行為を禁止します（薬物作成、違法物製造等を含む。性転換は例外）。", "Ped切り替え状態でのストーキングや無断侵入を禁止します。", "NPC Pedの使用を禁止します。", "不自然に透明な身体Skinの使用を禁止します。", "鍵付き住宅への無断侵入を禁止します。", "警察・EMSのなりすまし行為を禁止します。", "他プレイヤーへのストーキング行為を禁止します。"]}], "footer": "ルールを守り、全員が楽しめる街づくりにご協力をお願いいたします。※本内容は随時変更される可能性があります。"}, {"code": "CRM-01", "title": "MioCity犯罪ルール", "subtitle": "戦闘・車両・PD対応・法律・詳細ルール", "accent": "magenta", "sections": [{"type": "list", "heading": "1. コミュニケーション・RPルール", "items": ["いかなるシーン中でも他者を貶す・陥れる行為禁止", "命を軽く扱うような行為の禁止※自爆特攻など", "ダウン時のエモートや指さしの禁止(handsupも禁止)", "ダウン時に大声で話す行為(ウィスパーは可)", "大型犯罪と特殊大型を行えるのはギャングのみ", "ダウン後に/nameinradioで無線の名前を変更する行為を禁止", "/nameによる他人のID表示をさせながら犯罪することを禁止", "クリップ推奨※なにかしらの問題が起きた際に提出してもらう場合がございます"]}, {"type": "list", "heading": "2. 戦闘・武器・装備ルール", "items": ["犯罪者の準大型・大型以外の無警告発砲の禁止", "ドライブバイ禁止(ボートは除く)", "ギャングの合同は各ギャング最大10人の合計20人までとする。※一回に合同できるギャングは2組織まで", "合同の際は必ずどちらかのギャングカラーに服装や車両の色は統一させること", "合同は傭兵禁止", "合同は各ギャング一日2回まで※回数リセットは20時瞑想とする", "半グレの傭兵は3人まで可能", "他犯罪のシーン介入禁止", "猟銃（スナイパーライフル）・マスケット銃の使用禁止", "C4・スモークグレネードのギミック以外の使用禁止", "防弾ヘルメットの使用禁止", "修理台があるビルで5分以上発砲または占拠などそれに準ずる行為を禁止", "グレネードは通知後10分後に2個まで使用可能※使用可能犯罪：客船・美術館強盗・地下金庫強盗・特殊大型", "同じ場所で(準大型60分・大型＆特殊大型90分)の間立て籠るのを禁止"]}, {"type": "list", "heading": "3. 車両や服装について", "items": ["Emergency車・ジョブ車両（レンタル船も含む）指定の犯罪禁止車両の犯罪利用禁止(封鎖などの目的も禁止)", "EMS車両の窃盗を禁止", "小型・中型犯罪の逃走車両は車のみとする", "小型犯罪のニトロ使用禁止", "犯罪シーン中の車の修理及びヘリの修理は可能(修理台のみ)", "車両に乗りながらエスコートする行為を禁止", "逃走中にセーフゾーンの建物内に入る行為を禁止", "車両のトランクやダッシュボードへの利確禁止", "集団で犯罪を行う場合は服装と車両カラーを必ず統一すること", "emergency車両・バニラの電気自動車・バイクのサウンドに変更した車両は犯罪利用禁止"]}, {"type": "list", "heading": "4. PD関連ルール", "items": ["小型犯罪におけるPDの殺害を禁止(ブースティングBランク以上は除く)", "職務質問は任意ですが、拒否した場合は公務執行妨害が付きます", "準大型犯罪・大型犯罪はPDからの先撃ちが許可されている", "準大型犯罪・大型犯罪での人質を取る行為を禁止します", "PDへの通知後15分間は、鍵付きのアジト内(不動産物件も含む)に立ち入ることを禁止します", "PD車両の窃盗を禁止", "同車種の車両(ヘリとヘリや車と車)に追われている状態で、鍵付きアジトや不動産物件へ逃げ込む行為禁止", "おふざけ犯罪に関しては事前にPDへの連絡が必須", "PDをエスコートする行為禁止", "PDは到着後10分後にグレネードを2個使用可能。その後10分経過するごとに1個追加で使える（対象：客船・ボブキャット・ユニオン・宝石強盗・メイズバンク・パシフィック・パレト・美術館強盗）※パシフィックは到着後即使用許可となる"]}, {"type": "list", "heading": "5. 再起動と受注に関してのルール", "items": ["再起動前後30分は受注・犯罪禁止 (小型以上の犯罪) ※定期再起動 1時・6時・12時・16時・20時", "定期再起動以外の再起動後は10分間は受注・犯罪禁止 (小型以上の犯罪)", "犯罪禁止時間に犯罪を行ってしまった場合は即警察へ電話し出頭すること", "実行時に警察人数が足りていなくて実行できない場合は警察が必要人数に達するまで受注権を保持することを許可します", "犯罪シーン中に定期瞑想に入った場合捕まってない人以外は持ち物検査を受けてそのシーンの最中に獲得した報酬のみ返還する", "犯罪終了後、次の犯罪に参加＆受注することを10分間禁止。(この10分間とは犯罪者側全員が逃げ切ったもしくは戦闘していない状態から10分間となります。※収束ツイートなどは遅れる可能性があるため)"]}, {"type": "list", "heading": "6. その他のルール", "items": ["レーザーに対してパルクールやスライディングを使用する行為は禁止", "犯罪中にEMSを故意的に殺害する行為を禁止", "犯罪中の蘇生や蘇生後にシーンに再参加することを禁止(ゾンビアタック)", "タブレット犯罪の複数受注禁止", "ギャングに所属してない人は傭兵を一日3回までとする※回数リセットは20時瞑想とする", "効果付きの飲食物の犯罪シーンへの持ち込みと利用禁止※対象物には🚫のマークがついているもの", "白市民パスの再発行について：警察署に行き警察に白市民になる手続きを申請して申請から3週間の間に犯罪を行わずに生活した場合に再発行を行う ※ギャングや半グレ組織所属の場合は不可能", "ドローンはシーンに一回まで通知が鳴ってから10分後に使用解禁とします※PD犯罪者両方に適応"]}, {"type": "group", "heading": "人質ルール", "subsections": [{"heading": "1. 人質基本ルール", "items": ["人質を取っている状態でPDへの発砲を禁止", "NPCを人質にとる場合は要求1つ分とし、プレイヤーを人質にとる場合は要求2つ分とする。プレイヤーを人質に取る際、相手の事情を考えずに人質にすることを禁止(RPを理解し了承の上なら可能)", "人質を複数人取っても要求の個数は増えません", "外からでも見える位置に人質を配置すること", "PDが到着時に人質を脅している行動を見せること", "武器を使った脅迫が明確に行われていない場合、人質は逃走が可能"]}, {"heading": "2. 可能な要求の種類", "items": ["アタック禁止上限は2分まで(要求1つ分)", "ヘリ禁止上限2分(要求1つ分)※永久禁止の場合は要求2つ分", "バイク禁止上限2分(要求1つ分)※永久禁止の場合は要求2つ分。バイク逃走時は要求不可", "PD増援禁止上限2分(要求1つ分)※永久禁止の場合は要求2つ分", "その他の解放条件があれば現場にいるPDが承諾した場合のみ可能", "おふざけ犯罪の場合は上記以外の解放条件の提示も可能"]}, {"heading": "3. 人質に取れない場所やジョブについて", "items": ["出退勤に関わらずPDの人質は禁止", "EMSはセーフゾーン及び出勤中の人質は禁止", "同じ組織に属している人の人質は禁止"]}]}, {"type": "group", "heading": "利確関連ルール", "subsections": [{"heading": "1. 利確の条件", "intro": "以下の2つを利確の条件とする。", "items": ["鍵付きアジトや不動産物件に入った際", "PDから確実に追われていない状態で着替えを行い、犯罪に使用した車とは違うカラーの色の車に乗ること"]}, {"heading": "2. 利確関連ルール", "items": ["車両のトランクやダッシュボードへの利確禁止", "利確目的・ダウン体の離隔で現場または、鍵付きアジトの中に入った後、外に出る行為の禁止", "歪みが発生した場合、/911で犯罪名・やってる集団の色・耐久か撤退かリセットかを書いてコマンドを警察に送ったあと金持ち想定の人は手を上げて待機してから再開とする ※5分耐久中は金持ちの戦闘への参加を禁止", "歪み耐久はその犯罪シーン中のクリップをすべて補填チケットに提出すること"]}]}, {"type": "heist_rules", "heading": "準大型・大型・特殊大型についての詳細ルール", "heists": [{"name": "ボブキャット強盗", "items": ["金庫内からの発砲禁止", "金庫外からの発砲禁止"]}, {"name": "飛行機強盗", "items": ["飛行場襲撃で車を除くジェット機内のすべての報酬を必ず獲得してから逃走すること", "報酬を漁るのは3人まで", "飛行場の外(ゲートの前)より全員始める"]}, {"name": "アーティファクト強盗", "items": ["アーティファクトコンテナ内外からの発砲禁止"]}, {"name": "ユニオンヘイスト", "items": ["金庫内外からの発砲禁止"]}, {"name": "金庫強盗", "items": ["金庫を運んでる車へのアタックや発砲禁止"]}, {"name": "小型貨物船強盗", "items": ["犯罪を始める際には必ずボートから殲滅を行わなければならない", "船上での立て籠りは通知が送られてから45分まで"]}, {"name": "オイルリグ", "items": ["スタートする際は黄色の柱の梯子に捕まった状態で始める"]}, {"name": "地下金庫強盗", "items": ["最初に爆破させる壁から中での撃ち合い禁止", "金庫内外の撃ち合い禁止", "45分以上扉の中での立てこもり禁止"]}, {"name": "山岳金庫強盗", "items": ["45分以上立てこもり禁止"]}, {"name": "客船強盗", "items": ["スタートする際は全員船尾から開始すること(ヘリは除く)"]}, {"name": "ナイトクラブヘイスト", "items": ["入口付近や入口階段付近での出待ち禁止", "45分以上立てこもり禁止"]}]}, {"type": "table", "heading": "MioCity罰金について", "note": "※1 インパウンド料金・時間：小型50万/1時間　中型100万/2時間　準大型150万/3時間　大型200万/4時間　特殊大型300万/4時間", "columns": ["罪状", "内容", "刑期", "罰金"], "rows": [["NPC誘拐拉致監禁", "NPCを人質にとる行為", "10分", "100万"], ["NPC殺人", "NPCを殺害する行為(VDMも含む)", "20分", "150万"], ["プレイヤー誘拐拉致監禁", "プレイヤーを人質にとる行為", "30分", "200万"], ["プレイヤー殺人未遂", "プレイヤーに対して発砲する行為", "20分", "200万"], ["プレイヤー殺人", "プレイヤーを殺害する行為(VDMも含む)", "30分", "300万"], ["銃刀法違反", "ガンライセンス未所持で銃を所持する行為", "5分", "30万"], ["車両窃盗", "車両窃盗をする行為", "5分", "10万"], ["公用車窃盗", "PD車両を窃盗する行為", "60分", "100万"], ["道路交通法違反", "危険運転をする行為※1", "5分", "50万"], ["公務執行妨害", "PD&EMSの業務を妨害する行為", "5分", "50万"], ["威力業務妨害", "お店の営業を妨害する行為", "35分", "3000万"], ["違法物所持", "違法物を所持する行為", "5分", "30万"], ["違法薬物所持", "違法薬物を所持する行為", "10分", "10万×個数"], ["違法薬物販売", "違法薬物を販売する行為", "20分", "500万"], ["逃走補助罪", "犯人の逃走を補助した場合", "20分", "400万"], ["小型犯罪", "小型犯罪を行う行為", "10分", "150万"], ["中型犯罪", "中型犯罪を行う行為", "20分", "300万"], ["準大型犯罪", "準大型犯罪を行う行為", "30分", "450万"], ["大型犯罪", "大型犯罪を行う行為", "45分", "1000万"], ["特殊大型犯罪", "特殊大型を行う行為", "60分", "2000万"], ["警察署襲撃", "各警察署を襲撃する行為", "90分", "5億"], ["イベントテロ罪", "イベントテロを行う行為", "120分", "5000万"], ["詐欺罪", "詐欺を働く行為", "120分", "1万～10億"], ["わいせつ罪", "セクハラ行為", "お好み", "500万"]]}, {"type": "table", "heading": "犯罪実行可能人数とクールタイム", "columns": ["犯罪名", "内容", "PD必要人数", "犯罪者参加可能人数", "PD参加可能人数", "クールタイム"], "rows": [["ブースティング(小型)", "ブースティング行為", "0人", "4人", "制限なし", "ー"], ["コンビニ強盗(小型)", "コンビニを襲う行為", "1人", "制限なし", "制限なし", "30分"], ["家強盗(小型)", "家の中へ侵入し金品を盗む行為", "2人", "制限なし", "制限なし", "30分"], ["ATM強盗(小型)", "ATMを盗む行為", "2人", "制限なし", "制限なし", "30分"], ["輸送コンテナ強盗(小型)", "コンテナの中身を盗む行為", "3人", "4人", "制限なし", "1時間"], ["フリーカ銀行強盗(小型)", "フリーカ銀行を襲う行為", "3人", "4人", "制限なし", "30分"], ["ウィードショップ強盗(小型)", "ウィードショップを襲う行為", "3人", "4人", "制限なし", "1時間"], ["ランドリー強盗(小型)", "コインランドリーを襲う行為", "3人", "4人", "制限なし", "1時間"], ["現金交換所強盗(小型)", "現金交換所を襲う行為", "3人", "4人", "制限なし", "1時間"], ["ベッター強盗(中型)", "ベッター銀行を襲う行為", "4人", "4人", "6人", "1時間"], ["宝石店強盗(中型)", "宝石店を襲う行為", "4人", "4人", "6人", "1時間"], ["現金輸送車強盗(中型)", "現金輸送車を襲う行為", "4人", "4人", "6人", "1時間"], ["銀行地下強盗(中型)", "銀行の地下にある金庫を襲う行為", "4人", "4人", "6人", "1時間"], ["軍事基地強盗(準大型)", "軍事基地を襲う行為", "5人", "5人", "7人", "1時間"], ["列車強盗(準大型)", "列車を爆発させて貨物を盗む行為", "6人", "7人", "8人", "1時間"], ["パレト銀行強盗(準大型)", "パレト銀行を襲う行為", "6人", "7人", "9人", "2時間"], ["オイルリグ強盗(準大型)", "オイルリグを襲い金品を盗む行為", "7人", "8人", "10人", "1時間半"], ["ボブキャット強盗(準大型)", "ボブキャットを襲う行為", "7人", "8人", "10人", "2時間"], ["豪華客船強盗(準大型)", "豪華客船を襲い金品を盗む行為", "7人", "8人", "10人", "1時間半"], ["小型貨物船強盗(準大型)", "小型貨物船を襲う行為", "7人", "10人", "12人", "1時間半"], ["ナイトクラブヘイスト(準大型型)", "ナイトクラブを襲う行為", "7人", "10人", "13人", "2時間"], ["美術館強盗(大型)", "美術館を襲う行為", "7人", "12人", "14人", "2時間"], ["飛行機強盗(大型)", "飛行機を襲い金品を盗む行為", "8人", "12人", "16人", "2時間"], ["金庫強盗(大型)", "金庫を盗み出す行為", "8人", "14人", "17人", "2時間"], ["アーティファクト強盗(大型)", "コンテナからアーティファクトを盗む行為", "8人", "16人", "18人", "2時間半"], ["山岳金庫強盗(大型)", "山の中にある金庫を襲い金品を盗む行為", "9人", "制限なし", "制限なし", "2時間半"], ["地下金庫強盗(大型)", "地下金庫を襲い金品を盗む行為", "10人", "制限なし", "制限なし", "2時間"], ["ユニオンヘイスト(特殊大型)", "ユニオンの金庫を襲う行為", "12人", "制限なし", "制限なし", "2時間半"], ["パシフィック銀行強盗(特殊大型)", "パシフィック銀行を襲う行為", "13人", "制限なし", "制限なし", "3時間"]]}, {"type": "table", "heading": "歪み時の耐久時間", "columns": ["犯罪名", "歪みが起きた際の耐久時間"], "rows": [["ベッター強盗(中型)", "3分"], ["宝石店強盗(中型)", "3分"], ["現金輸送車強盗(中型)", "2分"], ["銀行地下強盗(中型)", "4分"], ["列車強盗(準大型)", "7分"], ["パレト銀行強盗(準大型)", "8分"], ["軍事基地強盗(準大型)", "5分"], ["オイルリグ強盗(準大型)", "5分"], ["ボブキャット強盗(準大型)", "7分"], ["豪華客船強盗(準大型)", "8分"], ["メイズバンク強盗(準大型)", "8分"], ["小型貨物船強盗(準大型)", "5分"], ["ナイトクラブ(準大型)", "8分"], ["美術館強盗(大型)", "10分"], ["飛行機強盗(大型)", "3分"], ["金庫強盗(大型)", "3分(金庫納品後)"], ["アーティファクト強盗(大型)", "10分"], ["山岳金庫強盗(大型)", "10分"], ["地下金庫強盗(大型)", "10分"], ["ユニオンヘイスト(特殊大型)", "10分"], ["パシフィック銀行強盗(特殊大型)", "15分"]]}, {"type": "list", "heading": "押収品", "items": ["銃火器(人質を取るために使った道具を含む)", "アーマー", "犯罪道具", "違法薬物(材料も含む)", "不正なお金", "犯罪で獲得できるアーティファクト類"]}, {"type": "list", "heading": "禁止車両", "items": ["WKP1・LaFor・LD-12・LD9・Terzo Millennio の犯罪使用を禁止", "デザートレイド・DRAUGUR の犯罪使用禁止", "ジャンプやブーストが可能な車の犯罪利用禁止(ニトロは除く)※標準でついている車両とカスタム等で後付けできる車両も使用禁止", "BMX、Emperor Albany、Dashound、Hauler、D350、その他カタログにて犯罪禁止となっている車両"]}], "footer": "※本内容は随時変更される可能性があります。"}, {"code": "DOC-01", "title": "MioCity個人医ルール", "subtitle": "治療対応・料金・禁止事項", "accent": "amber", "sections": [{"type": "list", "heading": "基本ルール", "intro": "基本的に白、黒市民関係なく治療を行います。※救急隊の職務を奪う行為は禁止", "items": ["警察から警告がありますが、聞こえてないなどで攻撃されてしまうことがあります。", "警察に対抗するために鎮静剤の使用可。", "治療費は最低50万～ 蘇生費は最低120万～。", "事件対応蘇生の場合はdice 3を振って出た金額を請求する（例：6 6 6 だったら666万）。", "車内からの担架行為許可。", "ダウンしたら速やかに担架またはエスコートを外すこと。", "出勤中は個人医無線に必ず入っておくこと。", "PD車両が犯人を護送していると確実に判断できる場合に限り、PDへのアタック可能。", "実行可能である犯罪は中型犯罪まで。※個人医としては全犯罪加入可能", "個人医が使用可能な車両は黄色のスパロー・シースパと黄色のバイクのみとします。", "現場に介入できる個人医は4名まで。", "生きている人をピックしたり車両に乗せる行為は禁止。"]}, {"type": "text", "heading": "罪状について", "paragraphs": ["警察に警告を受けても犯罪現場に居たり警察の業務を妨害すると公務執行妨害と逃走補助が付きます。", "誰か一人がピックを行った場合そのシーンに参加している個人医全員に同じ罪状が付与されます。"]}, {"type": "list", "heading": "禁止事項", "items": ["個人医アイテムの譲渡", "救急隊の職務を妨害する行為", "ギャング所属の禁止※二キャラ目を含む", "傭兵禁止", "法外な値段での請求禁止", "個人医ジョブ中は武器の所持禁止", "EMSとの兼業禁止※二キャラ目も含む", "歪み以外での無料での治療禁止"]}], "footer": "※本内容は随時変更される可能性があります。"}]</script>
+<script>
+(function(){
+  const DATA = JSON.parse(document.getElementById('mio-data').textContent);
+  const ACCENTS = { cyan: 'var(--cyan)', magenta: 'var(--magenta)', amber: 'var(--amber)' };
+  const ACCENT_RGB = { cyan: '61, 219, 234', magenta: '255, 77, 148', amber: '255, 182, 72' };
+
+  // Explicit ban flags per doc: only genuinely critical items get the red 禁止 flag.
+  // Keyed by section heading -> array of 0-based item indices in that section's list.
+  const BAN_FLAGS = {
+    "SRV-01": {
+      "一般ルール": [3, 15, 16, 17]   // cheat tools=BAN, inappropriate name=BAN, prior-griefer=BAN, cheat-seller server=BAN
+    },
+    "CRM-01": {},
+    "DOC-01": {}
+  };
+
+  let activeIdx = 0;
+  let query = '';
+
+  const doclistEl = document.getElementById('doclist');
+  const mobileBarEl = document.getElementById('mobileBar');
+  const contentEl = document.getElementById('content');
+  const quicknavEl = document.getElementById('quicknav');
+  const fileCodeEl = document.getElementById('fileCode');
+  const fileTitleEl = document.getElementById('fileTitle');
+  const fileSubEl = document.getElementById('fileSub');
+  const searchInput = document.getElementById('searchInput');
+  const searchWrap = document.getElementById('searchWrap');
+  const clearBtn = document.getElementById('clearBtn');
+  const matchCountEl = document.getElementById('matchCount');
+  const noResultsEl = document.getElementById('noResults');
+  const toTopBtn = document.getElementById('toTop');
+  const themeToggle = document.getElementById('themeToggle');
+  const themeLabel = document.getElementById('themeLabel');
+
+  // ---------- theme ----------
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    if(themeLabel) themeLabel.textContent = (t === 'light' ? 'LIGHT MODE' : 'DARK MODE');
+    const mtl = document.getElementById('mobileThemeLabel');
+    if(mtl) mtl.textContent = (t === 'light' ? 'LIGHT' : 'DARK');
+  }
+  let theme = 'dark';
+  try { theme = localStorage.getItem('miocity-theme') || 'dark'; } catch(e){}
+  applyTheme(theme);
+  function toggleTheme(){
+    theme = (theme === 'light' ? 'dark' : 'light');
+    applyTheme(theme);
+    try { localStorage.setItem('miocity-theme', theme); } catch(e){}
+  }
+  if(themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function highlight(text){
+    const safe = escapeHtml(text);
+    if(!query) return safe;
+    try{
+      const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'ig');
+      return safe.replace(re, '<mark>$1</mark>');
+    }catch(e){ return safe; }
+  }
+
+  // FIXED: explicit per-doc/per-section indices, not broad regex.
+  function isBanned(docCode, heading, itemIndex){
+    const perDoc = BAN_FLAGS[docCode];
+    if(!perDoc) return false;
+    const arr = perDoc[heading];
+    return Array.isArray(arr) && arr.includes(itemIndex);
+  }
+
+  function matches(text){
+    if(!query) return true;
+    return String(text).toLowerCase().includes(query.toLowerCase());
+  }
+
+  // crime tier detection from a cell string
+  function tierClass(str){
+    if(/特殊大型/.test(str)) return 'tier-special';
+    if(/準大型/.test(str)) return 'tier-semilarge';
+    if(/大型/.test(str)) return 'tier-large';
+    if(/中型/.test(str)) return 'tier-medium';
+    if(/小型/.test(str)) return 'tier-small';
+    return '';
+  }
+  function rowTier(row){
+    for(const c of row){ const t = tierClass(c); if(t) return t; }
+    return '';
+  }
+  // numeric column detection by header name
+  const NUM_HEADER = /罰金|人数|クールタイム|刑期|時間/;
+  function isNumericHeader(h){ return NUM_HEADER.test(h); }
+
+  function renderDocList(){
+    doclistEl.innerHTML = '';
+    mobileBarEl.innerHTML = '';
+    DATA.forEach((doc, i) => {
+      const tab = document.createElement('div');
+      tab.className = 'doctab' + (i === activeIdx ? ' active' : '');
+      tab.setAttribute('role', 'button');
+      tab.setAttribute('tabindex', '0');
+      tab.setAttribute('aria-pressed', i === activeIdx ? 'true' : 'false');
+      tab.setAttribute('aria-label', doc.title + ' — ' + doc.subtitle);
+      tab.style.setProperty('--tc', ACCENTS[doc.accent]);
+      tab.style.setProperty('--tc-rgb', ACCENT_RGB[doc.accent]);
+      tab.innerHTML = `
+        <span class="dot" aria-hidden="true"></span>
+        <span class="meta">
+          <span class="code">${escapeHtml(doc.code)}</span>
+          <span class="name">${escapeHtml(doc.title)}</span>
+          <span class="sub">${escapeHtml(doc.subtitle)}</span>
+        </span>`;
+      const activate = () => selectDoc(i);
+      tab.addEventListener('click', activate);
+      tab.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
+      });
+      doclistEl.appendChild(tab);
+
+      const mtab = document.createElement('div');
+      mtab.className = 'mtab' + (i === activeIdx ? ' active' : '');
+      mtab.setAttribute('role', 'button');
+      mtab.setAttribute('tabindex', '0');
+      mtab.setAttribute('aria-label', doc.title + ' — ' + doc.subtitle);
+      mtab.style.setProperty('--tc', ACCENTS[doc.accent]);
+      mtab.style.setProperty('--tc-rgb', ACCENT_RGB[doc.accent]);
+      mtab.innerHTML = `
+        <span class="mtab-code">${escapeHtml(doc.code)}</span>
+        <span class="mtab-title">${escapeHtml(doc.title)}</span>
+        <span class="mtab-sub">${escapeHtml(doc.subtitle)}</span>`;
+      mtab.addEventListener('click', activate);
+      mtab.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
+      });
+      mobileBarEl.appendChild(mtab);
+    });
+
+    // mobile theme toggle appended to mobile bar
+    const mt = document.createElement('div');
+    mt.className = 'mobile-theme';
+    mt.setAttribute('role', 'button');
+    mt.setAttribute('tabindex', '0');
+    mt.setAttribute('aria-label', 'テーマを切り替え');
+    mt.innerHTML = '<span id="mobileThemeLabel">' + (theme === 'light' ? 'LIGHT' : 'DARK') + '</span>';
+    mt.addEventListener('click', toggleTheme);
+    mt.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleTheme(); } });
+    mobileBarEl.appendChild(mt);
+  }
+
+  function selectDoc(i){
+    activeIdx = i;
+    const code = DATA[i] && DATA[i].code;
+    if(code) history.replaceState({doc:code}, '', '#' + code);
+    renderAll();
+    window.scrollTo({top:0});
+  }
+
+  function sectionId(i){ return 'sec-' + i; }
+
+  function renderQuicknav(doc){
+    quicknavEl.innerHTML = '';
+    doc.sections.forEach((sec, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'qchip';
+      chip.setAttribute('role', 'button');
+      chip.setAttribute('tabindex', '0');
+      chip.dataset.sec = i;
+      chip.style.setProperty('--tc', ACCENTS[doc.accent]);
+      chip.style.setProperty('--tc-rgb', ACCENT_RGB[doc.accent]);
+      chip.textContent = sec.heading;
+      const go = () => {
+        const el = document.getElementById(sectionId(i));
+        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      };
+      chip.addEventListener('click', go);
+      chip.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+      quicknavEl.appendChild(chip);
+    });
+  }
+
+  function renderList(items, docCode, heading, showAll){
+    let any = false;
+    const lis = items.map((text, idx) => {
+      const hit = matches(text);
+      if(hit) any = true;
+      const banned = isBanned(docCode, heading, idx);
+      const visible = !query || hit || showAll;
+      const cls = [banned?'banned':'', visible?'':'filtered-out'].filter(Boolean).join(' ');
+      return `<li${cls?` class="${cls}"`:''}>${banned?'<span class="flag">禁止</span>':''}${highlight(text)}</li>`;
+    }).join('');
+    return { html: `<ul class="rulelist">${lis}</ul>`, any };
+  }
+
+  function renderSection(doc, sec, idx){
+    let bodyHtml = '';
+    const headingHit = matches(sec.heading);
+    let anySectionMatch = query ? headingHit : true;
+    const titleId = sectionId(idx) + '-title';
+
+    if(sec.type === 'text'){
+      const paraMatches = sec.paragraphs.map(p => matches(p));
+      if(paraMatches.some(Boolean)) anySectionMatch = true;
+      const showAll = headingHit;
+      bodyHtml = `<div class="paragraphs">${sec.paragraphs.map((p,i)=>`<p style="${query && !paraMatches[i] && !showAll ? 'display:none' : ''}">${highlight(p)}</p>`).join('')}</div>`;
+    }
+    else if(sec.type === 'list'){
+      const introHit = !!(sec.intro && matches(sec.intro));
+      const showAll = headingHit || introHit;
+      if(sec.intro) bodyHtml += `<p class="intro-line"${query && !introHit && !showAll ? ' style="display:none"':''}>${highlight(sec.intro)}</p>`;
+      const { html, any } = renderList(sec.items, doc.code, sec.heading, showAll);
+      bodyHtml += html;
+      if(any || introHit) anySectionMatch = true;
+    }
+    else if(sec.type === 'group'){
+      sec.subsections.forEach(sub => {
+        const subHeadHit = matches(sub.heading);
+        const subIntroHit = !!(sub.intro && matches(sub.intro));
+        const showAll = headingHit || subHeadHit || subIntroHit;
+        let subInner = '';
+        if(sub.intro) subInner += `<p class="intro-line"${query && !subIntroHit && !showAll ? ' style="display:none"':''}>${highlight(sub.intro)}</p>`;
+        const { html, any } = renderList(sub.items, doc.code, sub.heading, showAll);
+        if(any || subHeadHit || subIntroHit) anySectionMatch = true;
+        subInner += html;
+        const subHidden = query && !(any || subHeadHit || subIntroHit || headingHit);
+        bodyHtml += `<div class="subgroup"${subHidden?' style="display:none"':''}><h3 class="subhead">${highlight(sub.heading)}</h3>${subInner}</div>`;
+      });
+    }
+    else if(sec.type === 'heist_rules'){
+      const cards = sec.heists.map(h => {
+        const itemHits = h.items.map(matches);
+        const nameHit = matches(h.name);
+        const heistMatch = nameHit || itemHits.some(Boolean);
+        if(heistMatch) anySectionMatch = true;
+        const showAll = headingHit || nameHit;
+        const hidden = query && !heistMatch && !headingHit;
+        return `<div class="heistcard"${hidden?' style="display:none"':''}>
+          <h4>${highlight(h.name)}</h4>
+          <ul>${h.items.map((it,i)=>`<li${query && !itemHits[i] && !showAll ? ' style="display:none"':''}>${highlight(it)}</li>`).join('')}</ul>
+        </div>`;
+      }).join('');
+      bodyHtml = `<div class="heistgrid">${cards}</div>`;
+    }
+    else if(sec.type === 'table'){
+      const numCol = sec.columns.map(isNumericHeader);
+      const colHit = sec.columns.some(matches);
+      const noteHit = !!(sec.note && matches(sec.note));
+      const showAll = headingHit || colHit;
+      const rows = sec.rows.map(row => {
+        const rowMatch = row.some(matches);
+        if(rowMatch) anySectionMatch = true;
+        const tier = rowTier(row);
+        const hidden = query && !rowMatch && !showAll;
+        const cls = [tier, hidden ? 'filtered-out' : ''].filter(Boolean).join(' ');
+        const cells = row.map((c, ci)=>{
+          const label = escapeHtml(sec.columns[ci] || '');
+          return `<td${numCol[ci]?' class="num"':''} data-label="${label}">${highlight(c)}</td>`;
+        }).join('');
+        return `<tr${cls?` class="${cls}"`:''}>${cells}</tr>`;
+      }).join('');
+      if(colHit || noteHit) anySectionMatch = true;
+      bodyHtml = `<div class="tablewrap"><table class="datatable">
+        <thead><tr>${sec.columns.map((c,ci)=>`<th scope="col"${numCol[ci]?' class="num"':''}>${highlight(c)}</th>`).join('')}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div><p class="scroll-hint">← 横スクロールで全列を表示 →</p>`;
+      if(sec.note) bodyHtml += `<div class="tablenote">${highlight(sec.note)}</div>`;
+    }
+
+    return `<section class="section" id="${sectionId(idx)}" role="region" aria-labelledby="${titleId}" style="${!anySectionMatch ? 'display:none':''}" data-match="${anySectionMatch}">
+      <div class="sec-head">
+        <span class="sec-num" aria-hidden="true">${String(idx+1).padStart(2,'0')}</span>
+        <h2 class="sec-title" id="${titleId}">${highlight(sec.heading)}</h2>
+      </div>
+      ${bodyHtml}
+    </section>`;
+  }
+
+  function renderDoc(){
+    const doc = DATA[activeIdx];
+    document.documentElement.style.setProperty('--tc', ACCENTS[doc.accent]);
+    document.documentElement.style.setProperty('--tc-rgb', ACCENT_RGB[doc.accent]);
+    fileCodeEl.textContent = doc.code;
+    fileCodeEl.style.color = ACCENTS[doc.accent];
+    fileCodeEl.style.borderColor = ACCENTS[doc.accent];
+    fileTitleEl.textContent = doc.title;
+    fileSubEl.textContent = doc.subtitle;
+    document.title = doc.title + ' — MioCity ルールアーカイブ';
+
+    renderQuicknav(doc);
+
+    const sectionsHtml = doc.sections.map((sec, i) => renderSection(doc, sec, i)).join('');
+    contentEl.innerHTML = `${sectionsHtml}
+      <div class="doc-footer">${escapeHtml(doc.footer || '')}</div>`;
+
+    checkNoResults();
+    updateCrossHint();
+    updateScrollSpy();
+  }
+
+  function checkNoResults(){
+    if(!query){
+      noResultsEl.style.display = 'none';
+      matchCountEl.textContent = '';
+      return;
+    }
+    const sections = contentEl.querySelectorAll('.section');
+    const visible = Array.from(sections).filter(s => s.getAttribute('data-match') === 'true');
+    noResultsEl.style.display = visible.length ? 'none' : 'block';
+    // count individual visible matches across list items, rows, paragraphs, heist items
+    let hits = 0;
+    contentEl.querySelectorAll('mark').forEach(()=>hits++);
+    matchCountEl.textContent = hits ? `${hits} 件ヒット / ${visible.length} セクション` : '一致なし';
+  }
+
+  // ---------- cross-document search hint ----------
+  function docStrings(doc){
+    const out = [];
+    doc.sections.forEach(sec => {
+      out.push(sec.heading);
+      if(sec.type === 'text') out.push.apply(out, sec.paragraphs);
+      else if(sec.type === 'list'){ if(sec.intro) out.push(sec.intro); out.push.apply(out, sec.items); }
+      else if(sec.type === 'group') sec.subsections.forEach(su => { out.push(su.heading); if(su.intro) out.push(su.intro); out.push.apply(out, su.items); });
+      else if(sec.type === 'heist_rules') sec.heists.forEach(h => { out.push(h.name); out.push.apply(out, h.items); });
+      else if(sec.type === 'table'){ out.push.apply(out, sec.columns); sec.rows.forEach(r => out.push.apply(out, r)); if(sec.note) out.push(sec.note); }
+    });
+    return out;
+  }
+  function docMatchCount(doc){
+    if(!query) return 0;
+    const q = query.toLowerCase();
+    return docStrings(doc).reduce((n, s) => n + (String(s).toLowerCase().includes(q) ? 1 : 0), 0);
+  }
+  function updateCrossHint(){
+    const hint = document.getElementById('crossHint');
+    if(!hint) return;
+    if(!query){ hint.hidden = true; hint.innerHTML = ''; return; }
+    const others = DATA.map((d, i) => ({ d, i, c: docMatchCount(d) })).filter(x => x.i !== activeIdx && x.c > 0);
+    if(!others.length){ hint.hidden = true; hint.innerHTML = ''; return; }
+    hint.hidden = false;
+    hint.innerHTML = '<span class="cross-label">他のファイルでもヒット:</span>' + others.map(x =>
+      `<button type="button" class="cross-chip" data-i="${x.i}" style="--tc:${ACCENTS[x.d.accent]};--tc-rgb:${ACCENT_RGB[x.d.accent]}">${escapeHtml(x.d.code)}・${escapeHtml(x.d.title)}<b>${x.c}</b></button>`
+    ).join('');
+    hint.querySelectorAll('.cross-chip').forEach(b => b.addEventListener('click', () => {
+      const i = parseInt(b.dataset.i, 10);
+      activeIdx = i;
+      const code = DATA[i] && DATA[i].code;
+      if(code) history.replaceState({ doc: code }, '', '#' + code);
+      renderAll();
+      window.scrollTo({ top: 0 });
+    }));
+  }
+
+  function renderAll(){
+    renderDocList();
+    renderDoc();
+  }
+
+  // ---------- search ----------
+  function onSearch(){
+    query = searchInput.value.trim();
+    searchWrap.classList.toggle('has-value', searchInput.value.length > 0);
+    renderDoc();
+  }
+  searchInput.addEventListener('input', onSearch);
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    query = '';
+    searchWrap.classList.remove('has-value');
+    renderDoc();
+    searchInput.focus();
+  });
+
+  // ---------- keyboard "/" shortcut ----------
+  document.addEventListener('keydown', (e) => {
+    if(e.key === '/' && document.activeElement !== searchInput){
+      e.preventDefault();
+      searchInput.focus();
+    }
+    if(e.key === 'Escape' && document.activeElement === searchInput && searchInput.value){
+      searchInput.value=''; query=''; searchWrap.classList.remove('has-value'); renderDoc();
+    }
+  });
+
+  // ---------- scroll spy ----------
+  let spyRAF = null;
+  function updateScrollSpy(){
+    const chips = quicknavEl.querySelectorAll('.qchip');
+    if(!chips.length) return;
+    const sections = Array.from(contentEl.querySelectorAll('.section'))
+      .filter(s => s.style.display !== 'none');
+    let currentIdx = -1;
+    const marker = 120;
+    sections.forEach(s => {
+      const top = s.getBoundingClientRect().top;
+      if(top - marker <= 0) currentIdx = parseInt(s.id.replace('sec-',''), 10);
+    });
+    if(currentIdx < 0 && sections.length){
+      currentIdx = parseInt(sections[0].id.replace('sec-',''), 10);
+    }
+    chips.forEach(c => {
+      c.classList.toggle('active', parseInt(c.dataset.sec, 10) === currentIdx);
+    });
+  }
+
+  // ---------- back to top ----------
+  function onScroll(){
+    toTopBtn.classList.toggle('show', window.scrollY > 400);
+    if(spyRAF) return;
+    spyRAF = requestAnimationFrame(() => { updateScrollSpy(); spyRAF = null; });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  toTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  // ---------- deep-link hash ----------
+  function docIdxFromHash(){
+    const h = (location.hash || '').replace('#','');
+    if(!h) return -1;
+    return DATA.findIndex(d => d.code === h);
+  }
+  window.addEventListener('hashchange', () => {
+    const idx = docIdxFromHash();
+    if(idx >= 0 && idx !== activeIdx){ activeIdx = idx; renderAll(); window.scrollTo({top:0}); }
+  });
+
+  // init from hash
+  const initIdx = docIdxFromHash();
+  if(initIdx >= 0) activeIdx = initIdx;
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
