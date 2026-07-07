@@ -6,12 +6,11 @@
 <title>MioCity ルールアーカイブ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     /* BACKGROUNDS */
     --bg:#0a0d12;
-    --bg-grad: radial-gradient(1100px 700px at 85% -10%, #101a22 0%, #0a0d12 55%);
     --panel:#11161d;
     --panel-2:#141a22;
     --raised:#171e27;
@@ -26,14 +25,14 @@
     --line:#232b36;
     --line-soft:#1a212a;
 
-    /* ACCENTS */
-    --cyan:#3ddbea;
+    /* ACCENTS (each with an -rgb twin so alpha tints follow the theme) */
+    --cyan:#3ddbea;       --cyan-rgb:61,219,234;
     --cyan-dim:#1c4750;
-    --magenta:#ff4d94;
+    --magenta:#ff4d94;    --magenta-rgb:255,77,148;
     --magenta-dim:#4a1c30;
-    --amber:#ffb648;
+    --amber:#ffb648;      --amber-rgb:255,182,72;
     --amber-dim:#4a3818;
-    --green:#2ee6a6;
+    --green:#2ee6a6;      --green-rgb:46,230,166;
     --danger:#ff5470;
     --danger-dim:#3d1620;
 
@@ -41,20 +40,20 @@
     --accent: var(--cyan);
     --accent-dim: var(--cyan-dim);
     --tc: var(--accent);
-    --tc-rgb: 61, 219, 234;    /* rgb of active accent, set per-doc by JS */
+    --tc-rgb: var(--cyan-rgb); /* rgb of active accent, set per-doc by JS */
     --mbar-h: 0px;             /* mobile doc-switcher height, set by JS on mobile */
     --sticky-bg: rgba(10,13,18,.82);
 
-    --radius: 10px;
-    --font-display: "Zen Kaku Gothic New", "Noto Sans JP", sans-serif;
-    --font-body: "Noto Sans JP", sans-serif;
+    --radius: 8px;
+    --radius-sm: 4px;
+    --font-display: "Zen Kaku Gothic New", "BIZ UDPGothic", sans-serif;
+    --font-body: "BIZ UDPGothic", "Noto Sans JP", sans-serif;
     --font-mono: "JetBrains Mono", monospace;
   }
 
   /* ===== LIGHT THEME ===== */
   :root[data-theme="light"]{
     --bg:#f8f9fb;
-    --bg-grad: linear-gradient(135deg, #f8f9fb 0%, #eef2f8 100%);
     --panel:#eff2f7;
     --panel-2:#e8ecf3;
     --raised:#dfe5ed;
@@ -65,18 +64,17 @@
     --line:#d0dce8;
     --line-soft:#dde5f0;
     /* darker, saturated accents so accent-colored TEXT stays legible on light */
-    --cyan:#0a6c7b;
-    --magenta:#c01e5e;
-    --amber:#8a5a00;
-    --green:#0a7048;
+    --cyan:#0a6c7b;       --cyan-rgb:10,108,123;
+    --magenta:#c01e5e;    --magenta-rgb:192,30,94;
+    --amber:#8a5a00;      --amber-rgb:138,90,0;
+    --green:#0a7048;      --green-rgb:10,112,72;
     --sticky-bg: rgba(248,249,251,.85);
   }
-  :root[data-theme="light"] .tag.status{ color:#1a7f4b; }
 
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--bg-grad), var(--bg);
+    background:var(--bg);
     color:var(--text);
     font-family:var(--font-body);
     font-size:15px;
@@ -85,7 +83,7 @@
     -webkit-font-smoothing:antialiased;
   }
 
-  ::selection{ background: var(--tc, var(--accent)); color:#04141a; }
+  ::selection{ background: rgba(var(--tc-rgb), .35); }
 
   a{ color:inherit; }
 
@@ -99,29 +97,12 @@
   /* skip link */
   .skip-link{
     position:absolute; top:-48px; left:0; z-index:100;
-    background:var(--tc, var(--accent)); color:#0a0d12;
+    background:var(--tc, var(--accent)); color:var(--bg);
     padding:8px 16px; font-weight:700; border-radius:0 0 6px 0;
     font-family:var(--font-mono); font-size:12px;
     transition: top .15s ease;
   }
   .skip-link:focus{ top:0; }
-
-  /* ---------- scanline (static, subtle) ---------- */
-  .scan{
-    position:absolute; inset:0; pointer-events:none; overflow:hidden;
-    opacity:.15;
-    mask-image: linear-gradient(to bottom, black, transparent);
-  }
-  .scan::before{
-    content:""; position:absolute; left:0; right:0; top:0; height:2px;
-    background: linear-gradient(90deg, transparent, var(--tc, var(--accent)), transparent);
-    opacity:.5;
-    animation: scanmove 6s linear infinite;
-  }
-  @keyframes scanmove{
-    0%{ top:-5%; }
-    100%{ top:105%; }
-  }
 
   /* ---------- shell layout ---------- */
   .shell{
@@ -148,11 +129,7 @@
   .brand-name{
     font-family:var(--font-display); font-weight:900; font-size:22px;
     letter-spacing:.02em;
-    background: linear-gradient(120deg, var(--text) 10%, var(--cyan) 60%, var(--magenta) 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .brand-sub{
-    font-family:var(--font-mono); font-size:12px; color:var(--text-secondary); margin-top:4px;
+    color:var(--text);
   }
 
   .theme-toggle{
@@ -175,19 +152,13 @@
     background:var(--panel);
     color:var(--text);
     cursor:pointer;
-    transition: border-color .15s ease, background .15s ease, transform .15s ease, box-shadow .15s ease;
+    transition: border-color .15s ease, background .15s ease;
     text-align:left;
   }
-  .doctab:hover{ transform: translateX(2px); border-color: var(--tc, var(--accent)); }
+  .doctab:hover{ border-color: var(--tc, var(--accent)); }
   .doctab.active{
     background: var(--panel-2);
     border-color: var(--tc, var(--accent));
-    box-shadow: inset 0 0 12px rgba(var(--tc-rgb), .4), 0 0 20px rgba(var(--tc-rgb), .25);
-  }
-  .doctab .dot{
-    width:8px; height:8px; border-radius:50%; margin-top:6px; flex:none;
-    background: var(--tc, var(--accent)); opacity:.8;
-    filter: drop-shadow(0 0 4px rgba(var(--tc-rgb), .5));
   }
   .doctab .meta{ display:flex; flex-direction:column; gap:3px; min-width:0; }
   .doctab .code{
@@ -221,7 +192,6 @@
     padding:3px 8px; border-radius:4px; border:1px solid currentColor;
     color: var(--tc, var(--accent));
   }
-  .tag.status{ color:#7ee89a; }
   .doctitle{
     font-family:var(--font-display); font-weight:900; font-size:clamp(24px,3vw,34px);
     letter-spacing:.01em; margin:0; line-height:1.2; color:var(--text);
@@ -232,11 +202,10 @@
   .searchwrap{
     display:flex; align-items:center; gap:10px;
     background:var(--panel); border:1px solid var(--line);
-    border-radius:8px; padding:10px 14px; min-width:260px;
-    border-left:2px solid transparent;
+    border-radius:var(--radius); padding:10px 14px; min-width:260px;
     transition: border-color .15s ease;
   }
-  .searchwrap:focus-within{ border-left:2px solid var(--tc, var(--accent)); }
+  .searchwrap:focus-within{ border-color: var(--tc, var(--accent)); }
   .searchwrap svg{ flex:none; opacity:.7; color:var(--text-secondary); }
   .searchwrap input{
     background:none; border:none; outline:none; color:var(--text);
@@ -249,7 +218,7 @@
     background:var(--line); color:var(--text); font-size:13px; line-height:1;
     padding:0;
   }
-  .searchwrap .clearbtn:hover{ background:var(--tc, var(--accent)); color:#04141a; }
+  .searchwrap .clearbtn:hover{ background:var(--tc, var(--accent)); color:var(--bg); }
   .searchwrap.has-value .clearbtn{ display:inline-flex; }
   .searchwrap .kbd{
     font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
@@ -283,29 +252,21 @@
   }
   .qchip:hover{ color:var(--text); border-color: var(--tc, var(--accent)); }
   .qchip.active{
-    color:var(--text); background:transparent;
-    border-color:var(--line-soft);
-    border-bottom:2px dashed var(--tc, var(--accent));
-    box-shadow:0 0 8px rgba(var(--tc-rgb), .3);
+    color:var(--text); background:var(--panel);
+    border-color: var(--tc, var(--accent));
+    border-bottom:2px solid var(--tc, var(--accent));
   }
 
   /* ---------- content sections ---------- */
   .section{
     margin-bottom:34px; scroll-margin-top: calc(var(--mbar-h, 0px) + 78px);
-    animation: rise .5s ease both;
-  }
-  @keyframes rise{
-    from{ opacity:0; transform:translateY(8px); }
-    to{ opacity:1; transform:translateY(0); }
   }
 
   .sec-head{
     display:flex; align-items:baseline; gap:10px; margin-bottom:14px;
   }
   .sec-num{
-    font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--tc, var(--accent));
-    border:1px solid var(--tc, var(--accent)); border-radius:4px; padding:4px 8px;
-    background: rgba(var(--tc-rgb), .08);
+    font-family:var(--font-mono); font-size:12px; font-weight:400; color:var(--text-faint);
     flex:none;
   }
   .sec-title{
@@ -318,31 +279,27 @@
   .paragraphs p:last-child{ margin-bottom:0; }
   .intro-line{
     color:var(--text-secondary); font-size:15px; line-height:1.7; margin:0 0 12px;
-    border-left:2px solid var(--tc, var(--accent)); padding:6px 0 6px 12px;
-    background: rgba(var(--tc-rgb), .02);
+    border-left:1px solid var(--line); padding:6px 0 6px 12px;
     max-width:74ch;
   }
 
-  ul.rulelist{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; }
+  ul.rulelist{ list-style:none; margin:0; padding:0; max-width:88ch; border-top:1px solid var(--line-soft); }
   ul.rulelist li{
-    position:relative; padding:10px 14px 10px 30px;
-    background:var(--panel); border:1px solid var(--line-soft); border-radius:8px;
+    position:relative; padding:10px 10px 10px 26px;
+    border-bottom:1px solid var(--line-soft);
     font-size:15px; line-height:1.65; color:var(--text);
-    max-width:88ch;
   }
   ul.rulelist li::before{
-    content:""; position:absolute; left:12px; top:19px;
-    width:7px; height:7px; border-radius:2px;
-    background: var(--tc, var(--accent)); opacity:.8;
-    filter: drop-shadow(0 0 4px rgba(var(--tc-rgb), .5));
+    content:""; position:absolute; left:6px; top:20px;
+    width:6px; height:6px;
+    background: var(--tc, var(--accent));
   }
-  ul.rulelist li:hover{ outline:1px solid var(--tc, var(--accent)); }
-  ul.rulelist li.banned{ border-color: var(--danger-dim); }
-  ul.rulelist li.banned::before{ background:var(--danger); filter:drop-shadow(0 0 4px rgba(255,84,112,.5)); }
+  ul.rulelist li:hover{ background:var(--panel); }
+  ul.rulelist li.banned::before{ background:var(--danger); }
   ul.rulelist li .flag{
     display:inline-block; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em;
     color:var(--danger); border:1px solid var(--danger); border-radius:3px; padding:1px 5px;
-    margin-right:8px; transform:translateY(-1px);
+    margin-right:8px;
   }
   ul.rulelist li.filtered-out{ display:none; }
 
@@ -350,18 +307,17 @@
   .subgroup:first-child{ margin-top:0; }
   h3.subhead{
     font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--text-secondary);
-    letter-spacing:.04em; margin:0 0 10px; padding-bottom:6px; border-bottom:1px dashed var(--line);
+    letter-spacing:.04em; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line);
   }
 
   /* heist rules grid */
-  .heistgrid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px; }
+  .heistgrid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; align-items:start; }
   .heistcard{
-    background:var(--panel-2); border:1px solid var(--line-soft);
-    border-top:3px solid var(--tc, var(--accent));
-    border-radius:10px; padding:14px 16px;
-    transition: box-shadow .15s ease;
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:var(--radius); padding:14px 16px;
+    transition: border-color .15s ease;
   }
-  .heistcard:hover{ box-shadow: inset 0 2px 8px rgba(var(--tc-rgb), .1); }
+  .heistcard:hover{ border-color: var(--tc, var(--accent)); }
   .heistcard h4{
     margin:0 0 8px; font-family:var(--font-display); font-size:14px; font-weight:700;
     color: var(--tc, var(--accent));
@@ -371,37 +327,36 @@
   /* tables */
   .tablewrap{
     overflow:auto; max-height:65vh; position:relative;
-    border:1px solid var(--line-soft); border-radius:10px;
+    border:1px solid var(--line-soft); border-radius:var(--radius-sm);
   }
   .scroll-hint{
     display:none; font-family:var(--font-mono); font-size:10.5px;
     color:var(--text-faint); margin:6px 0 0;
   }
-  table.datatable{ border-collapse:collapse; width:100%; min-width:560px; }
+  table.datatable{ border-collapse:collapse; width:100%; }
   table.datatable thead{
     position:sticky; top:0; z-index:20;
     background:var(--raised);
-    box-shadow: 0 4px 16px rgba(var(--tc-rgb), .15);
   }
   table.datatable thead th{
     font-family:var(--font-mono); font-weight:600; font-size:12px; letter-spacing:.06em;
     text-transform:uppercase; color: var(--tc, var(--accent));
     background:var(--raised); text-align:left; padding:10px 14px;
-    border-bottom:1px dashed var(--line); white-space:nowrap;
+    border-bottom:1px solid var(--line); white-space:nowrap;
   }
   table.datatable thead th.num{ text-align:right; padding-right:24px; }
   table.datatable tbody td{
     padding:9px 14px; border-bottom:1px solid var(--line-soft); color:var(--text);
-    font-size:14px; line-height:1.6; white-space:nowrap;
+    font-size:14px; line-height:1.6;
   }
   table.datatable tbody td.num{
-    text-align:right; padding-right:24px;
+    text-align:right; padding-right:24px; white-space:nowrap;
     font-family:var(--font-mono); font-variant-numeric: tabular-nums;
   }
-  table.datatable tbody tr{ border-left:3px solid transparent; transition: transform .12s ease, border-left-width .12s ease; }
+  table.datatable tbody tr{ border-left:3px solid transparent; }
   table.datatable tbody tr:nth-child(even){ background: rgba(255,255,255,.03); }
   :root[data-theme="light"] table.datatable tbody tr:nth-child(even){ background: rgba(0,0,0,.03); }
-  table.datatable tbody tr:hover{ background: rgba(255,255,255,.04); box-shadow: inset 0 0 6px rgba(var(--tc-rgb), .1); }
+  table.datatable tbody tr:hover{ background: rgba(255,255,255,.05); }
   :root[data-theme="light"] table.datatable tbody tr:hover{ background: rgba(0,0,0,.04); }
   /* crime-tier left border */
   table.datatable tbody tr.tier-small{ border-left-color: var(--cyan); }
@@ -409,17 +364,15 @@
   table.datatable tbody tr.tier-semilarge{ border-left-color: var(--amber); }
   table.datatable tbody tr.tier-large{ border-left-color: #ff5470; }
   table.datatable tbody tr.tier-special{ border-left-color: #c85eff; }
-  table.datatable tbody tr[class*="tier-"]:hover{ border-left-width:4px; transform: translateX(2px); }
+  :root[data-theme="light"] table.datatable tbody tr.tier-large{ border-left-color:#c2273f; }
+  :root[data-theme="light"] table.datatable tbody tr.tier-special{ border-left-color:#8b2fc9; }
   table.datatable tbody tr.filtered-out{ display:none; }
   .tablenote{ font-size:12px; color:var(--text-faint); margin-top:8px; line-height:1.6; }
 
   /* search highlight */
   mark{
-    background: rgba(var(--tc-rgb), .25);
+    background: rgba(var(--tc-rgb), .22);
     color: var(--text);
-    border-top:1px solid var(--tc, var(--accent));
-    border-bottom:1px solid var(--tc, var(--accent));
-    box-shadow: 0 0 4px rgba(var(--tc-rgb), .3);
     border-radius:2px; padding:1px 3px;
   }
 
@@ -433,12 +386,18 @@
     font-family:var(--font-mono); font-size:13px;
   }
 
+  .site-footer{
+    margin-top:56px; padding-top:16px; border-top:1px solid var(--line-soft);
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em;
+    color:var(--text-faint); text-transform:uppercase;
+  }
+
   /* cross-document search hint */
   .cross-hint{
     display:flex; flex-wrap:wrap; align-items:center; gap:8px;
     margin:0 0 22px; padding:10px 14px;
     background:var(--panel); border:1px solid var(--line-soft);
-    border-left:2px solid var(--tc, var(--accent)); border-radius:0 8px 8px 0;
+    border-radius:var(--radius);
   }
   .cross-hint[hidden]{ display:none; }
   .cross-label{ font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary); }
@@ -446,10 +405,10 @@
     display:inline-flex; align-items:center; gap:2px;
     font-family:var(--font-body); font-size:13px; cursor:pointer;
     color:var(--text); background:var(--panel-2);
-    border:1px solid var(--line-soft); border-left:3px solid var(--tc,var(--accent));
-    border-radius:6px; padding:5px 10px; min-height:34px;
+    border:1px solid var(--line-soft);
+    border-radius:var(--radius); padding:5px 10px; min-height:34px;
   }
-  .cross-chip:hover{ border-color:var(--tc,var(--accent)); box-shadow:0 0 8px rgba(var(--tc-rgb),.25); }
+  .cross-chip:hover{ border-color:var(--tc,var(--accent)); }
   .cross-chip b{ color:var(--tc,var(--accent)); font-family:var(--font-mono); margin-left:5px; }
 
   /* back to top */
@@ -459,12 +418,11 @@
     background:var(--panel); border:1px solid var(--tc, var(--accent));
     color:var(--tc, var(--accent)); cursor:pointer;
     display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 0 18px rgba(var(--tc-rgb), .25);
     opacity:0; pointer-events:none; transform:translateY(10px);
     transition: opacity .2s ease, transform .2s ease;
   }
   .to-top.show{ opacity:1; pointer-events:auto; transform:translateY(0); }
-  .to-top:hover{ background:var(--tc, var(--accent)); color:#04141a; }
+  .to-top:hover{ background:var(--tc, var(--accent)); color:var(--bg); }
 
   /* ---------- responsive ---------- */
   @media (max-width: 900px){
@@ -487,7 +445,7 @@
     .mtab .mtab-code{ font-family:var(--font-mono); font-size:9px; letter-spacing:.14em; color:var(--tc, var(--accent)); }
     .mtab .mtab-title{ font-size:11px; font-weight:700; color:var(--text); }
     .mtab .mtab-sub{ font-size:9px; color:var(--text-secondary); }
-    .mtab.active{ border-bottom:2px dashed var(--tc, var(--accent)); box-shadow:0 0 8px rgba(var(--tc-rgb), .3); }
+    .mtab.active{ border-bottom:2px solid var(--tc, var(--accent)); }
     .mobile-theme{
       display:flex; align-items:center; gap:6px; align-self:center;
       min-height:48px; padding:0 12px; cursor:pointer;
@@ -537,20 +495,18 @@
   /* ---------- accessibility: reduced motion ---------- */
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
-    .section{ animation:none; }
-    .scan::before{ animation:none; display:none; }
   }
 
   /* ---------- print ---------- */
   @media print{
     body{ background:#fff; color:#000; }
-    .sidebar, .mobile-bar, .topband .searchbar-row, .quicknav, .scan,
-    .to-top, .theme-toggle, .skip-link, .scroll-hint{ display:none !important; }
+    .sidebar, .mobile-bar, .topband .searchbar-row, .quicknav,
+    .to-top, .theme-toggle, .skip-link, .scroll-hint, .site-footer{ display:none !important; }
     .shell{ grid-template-columns:1fr; max-width:none; }
     .main{ padding:0; }
     .section{ display:block !important; page-break-inside:avoid; break-inside:avoid; margin-bottom:20px; }
     .section .paragraphs p, ul.rulelist li, .heistcard, table.datatable tr{ display:revert !important; }
-    ul.rulelist li{ background:#fff; border:1px solid #ccc; color:#000; }
+    ul.rulelist li{ background:#fff; border-bottom:1px solid #ccc; color:#000; }
     ul.rulelist li.filtered-out, .heistcard[hidden], tr.filtered-out{ display:list-item !important; }
     .tablewrap{ overflow:visible !important; max-height:none !important; border:1px solid #ccc; }
     table.datatable thead th, table.datatable tbody td{ color:#000; }
@@ -569,7 +525,6 @@
     <div class="brand">
       <div class="brand-mark">MIO-NET CIVIC ARCHIVE</div>
       <div class="brand-name">MioCity Rules</div>
-      <div class="brand-sub">ACCESS: PUBLIC // v.2026.07</div>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="テーマを切り替え">
         <svg class="ticon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path class="t-moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
         <span id="themeLabel">DARK MODE</span>
@@ -582,12 +537,10 @@
     <div class="mobile-bar" id="mobileBar"></div>
 
     <div class="topband">
-      <div class="scan" aria-hidden="true"></div>
       <div class="filehead">
         <div class="filehead-left">
           <div class="tag-row">
             <span class="tag" id="fileCode">SRV-01</span>
-            <span class="tag status">● ACCESS GRANTED</span>
           </div>
           <h1 class="doctitle" id="fileTitle">—</h1>
           <div class="docsub" id="fileSub">—</div>
@@ -595,7 +548,7 @@
         <div class="searchbar-row">
           <div class="searchwrap" id="searchWrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <input id="searchInput" type="text" aria-label="全セクションをキーワード検索" aria-describedby="matchCount" placeholder="条文をキーワード検索…（例: 禁止 / 罰金 / 犯罪禁止車両）" />
+            <input id="searchInput" type="text" aria-label="全セクションをキーワード検索" aria-describedby="matchCount" placeholder="ルールを検索（例: 罰金 / 人質）" />
             <button class="clearbtn" id="clearBtn" type="button" aria-label="検索をクリア">×</button>
             <span class="kbd">/</span>
           </div>
@@ -608,6 +561,7 @@
     <div id="crossHint" class="cross-hint" hidden></div>
     <div id="content"></div>
     <div class="no-results" id="noResults" role="status" aria-live="polite">一致する条文が見つかりませんでした。検索語を変えてお試しください。</div>
+    <footer class="site-footer">MIO-NET CIVIC ARCHIVE // v.2026.07</footer>
   </main>
 </div>
 
@@ -620,7 +574,7 @@
 (function(){
   const DATA = JSON.parse(document.getElementById('mio-data').textContent);
   const ACCENTS = { cyan: 'var(--cyan)', magenta: 'var(--magenta)', amber: 'var(--amber)', green: 'var(--green)' };
-  const ACCENT_RGB = { cyan: '61, 219, 234', magenta: '255, 77, 148', amber: '255, 182, 72', green: '46, 230, 166' };
+  const ACCENT_RGB = { cyan: 'var(--cyan-rgb)', magenta: 'var(--magenta-rgb)', amber: 'var(--amber-rgb)', green: 'var(--green-rgb)' };
 
   // No per-item 禁止 flags — every rule uses the same uniform bullet styling.
   const BAN_FLAGS = {};
@@ -717,7 +671,6 @@
       tab.style.setProperty('--tc', ACCENTS[doc.accent]);
       tab.style.setProperty('--tc-rgb', ACCENT_RGB[doc.accent]);
       tab.innerHTML = `
-        <span class="dot" aria-hidden="true"></span>
         <span class="meta">
           <span class="code">${escapeHtml(doc.code)}</span>
           <span class="name">${escapeHtml(doc.title)}</span>
